@@ -9,6 +9,7 @@
 #![cfg(windows)]
 
 use std::io::Read;
+use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -312,6 +313,7 @@ fn run_capture(program: &str, args: &[&str]) -> String {
     std::thread::spawn(move || {
         let r = std::process::Command::new(&thread_program)
             .args(&args)
+            .creation_flags(0x0800_0000) // CREATE_NO_WINDOW
             .output();
         let _ = tx.send(r);
     });

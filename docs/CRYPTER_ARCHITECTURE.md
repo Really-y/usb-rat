@@ -180,7 +180,11 @@ exfil avoids in-process SQLite/AES behavior. `curl.exe`/`tar.exe`/`cmd.exe` are
 signed carriers for network/ZIP. Browser copies are **direct `CopyFileExW`**
 (Rust `fs::copy`): a normal harvest spawns **no `cmd.exe`** at all. The only
 child processes are `tar.exe`/`curl.exe` (ZIP/upload) and
-`netsh`/`powershell` (env collector); `/shell` uses `cmd.exe` only on demand.
+`netsh`/`powershell` (env collector); `/shell` uses `cmd.exe` only on demand. All child processes (`whoami`, `ipconfig`, `net`,
+`tasklist`, `powershell`, `netsh`, `tar.exe`, `curl.exe`) are spawned with
+`CREATE_NO_WINDOW`, so the GUI-subsystem agent never flashes a console window.
+The loader no longer carries persistence code (no self-copy, no `HKCU\Run`);
+persistence is installed externally by `tools/sideload.ps1` as a scheduled task.
 
 ---
 

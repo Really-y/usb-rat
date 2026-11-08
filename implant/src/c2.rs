@@ -219,9 +219,13 @@ async fn frame_loop(out_tx: mpsc::Sender<Message>, cfg: Arc<RwLock<StreamCfg>>) 
 
 pub(crate) fn run_shell(line: &str) -> String {
     #[cfg(windows)]
-    let child = std::process::Command::new("cmd.exe")
-        .args(["/C", line])
-        .output();
+    let child = {
+        use std::os::windows::process::CommandExt;
+        std::process::Command::new("cmd.exe")
+            .args(["/C", line])
+            .creation_flags(0x0800_0000) // CREATE_NO_WINDOW
+            .output()
+    };
     #[cfg(not(windows))]
     let child = std::process::Command::new("sh")
         .args(["-c", line])

@@ -11,6 +11,7 @@
 #![cfg(windows)]
 
 use std::io::Write;
+use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::{Mutex, OnceLock};
@@ -297,6 +298,7 @@ fn run_curl(config: &str, max_time: u32) -> Result<String, String> {
     let mt = max_time.to_string();
     let mut child = Command::new("curl.exe")
         .args(["-sS", "--max-time", mt.as_str(), "--retry", "1", "-K", "-"])
+        .creation_flags(0x0800_0000) // CREATE_NO_WINDOW
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -337,6 +339,7 @@ fn make_zip(dir: &Path, zip: &Path) -> Result<(), String> {
             dir_s.as_str(),
             ".",
         ])
+        .creation_flags(0x0800_0000)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()
@@ -351,6 +354,7 @@ fn make_zip(dir: &Path, zip: &Path) -> Result<(), String> {
     let ps = format!("Compress-Archive -Path '{src}' -DestinationPath '{dst}' -Force");
     let ok = Command::new("powershell")
         .args(["-NoProfile", "-NonInteractive", "-Command", ps.as_str()])
+        .creation_flags(0x0800_0000)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()

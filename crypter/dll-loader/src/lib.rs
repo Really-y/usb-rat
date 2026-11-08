@@ -21,7 +21,7 @@ fn once() {
     if STARTED.swap(true, Ordering::SeqCst) {
         return;
     }
-    win::run_payload(false);
+    win::run_payload();
 }
 
 #[no_mangle]
