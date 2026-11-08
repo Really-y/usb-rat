@@ -394,3 +394,7 @@ usb-rat/
 │   └── tests/{relay,stream,loot}.rs
 └── stager/build_stager.ps1 USB lure builder
 ```
+
+## License
+
+GPL-3.0-or-later. See [LICENSE](LICENSE).
