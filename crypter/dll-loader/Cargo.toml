@@ -1,0 +1,23 @@
+[package]
+name = "crypter-dll"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "wmpdui"
+crate-type = ["cdylib"]
+
+[dependencies]
+crypter-common = { path = "../common" }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Memory",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+] }

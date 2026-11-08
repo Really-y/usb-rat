@@ -1,0 +1,12 @@
+[package]
+name = "crypter-packer"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "crypter-packer"
+path = "src/main.rs"
+
+[dependencies]
+crypter-common = { path = "../common" }
+getrandom = "0.2"
