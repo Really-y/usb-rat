@@ -21,7 +21,8 @@ param(
     [string]$UsbPath = "",
     [switch]$CleanWindows,
     [switch]$DryRun,
-    [switch]$Force
+    [switch]$Force,
+    [switch]$NoPause
 )
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -41,6 +42,7 @@ $targets = @(
     (Join-Path $UsbPath "cleanup.ps1")
 )
 
+try {
 Write-Host "usb-rat cleanup"
 Write-Host "  target : $UsbPath"
 Write-Host "  windows: $([bool]$CleanWindows)"
@@ -118,4 +120,13 @@ if ($DryRun) {
 } else {
     Write-Host "RESULT: $($bad.Count) item(s) remain"
     foreach ($b in $bad) { Write-Host "  - $($b.Item): $($b.Note)" }
+}
+} catch {
+    Write-Host ""
+    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+} finally {
+    if (-not $NoPause) {
+        Write-Host ""
+        Read-Host "Press Enter to close" | Out-Null
+    }
 }
