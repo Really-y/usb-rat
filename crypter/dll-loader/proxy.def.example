@@ -1,0 +1,23 @@
+; Proxy export template for the signed-host DLL sideload.
+;
+; 1. On Windows, dump the host's imports from wmpdui.dll:
+;      dumpbin /imports C:\Windows\System32\wmpdmc.exe
+;    or:  objdump -p C:\Windows\System32\wmpdmc.exe | findstr /A: -n wmpdui
+; 2. Generate this file automatically:
+;      powershell -ExecutionPolicy Bypass -File tools\gen_proxy_def.ps1 `
+;        -HostExe C:\Windows\System32\wmpdmc.exe `
+;        -Out crypter\dll-loader\proxy.def
+; 3. Copy the real vendor DLL to real_wmpdui.dll next to the host and our DLL.
+; 4. Rebuild crypter-dll; the build script links proxy.def automatically.
+;
+; Format: ImportedName=real_wmpdui.ImportedName
+; The forwarder strings are resolved by Windows at call time from
+; real_wmpdui.dll (the original vendor DLL renamed).
+
+LIBRARY wmpdui
+EXPORTS
+  DllMain
+  Run
+  ; Replace with the host's actual imports, for example:
+  ; WMPUI_Initialize=real_wmpdui.WMPUI_Initialize
+  ; WMPUI_Create=real_wmpdui.WMPUI_Create

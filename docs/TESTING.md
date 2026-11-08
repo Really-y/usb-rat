@@ -115,6 +115,10 @@ temp-exec scan or post-decryption memory).
 - Loader profile reduction: the loader's persistence module (self-copy +
   `HKCU\Run`) was removed; persistence is external (`sideload.ps1`). ETW/AMSI
   patch strings in the loader are XOR-decoded (0 plaintext).
+- Sideload proxy `.def`: with a dummy `proxy.def`
+  (`DllMain`, `Run`, `Foo=real_wmpdui.Foo`) the DLL exports all three; without
+  the file it exports only `DllMain`/`Run`. Build script links the `.def` on
+  both MSVC (`/DEF:`) and GNU (input file) targets.
 - Syscall variant static verification (`wmpsvc2.dll`): disassembly shows the
   naked stub `mov rcx,r10; mov g_ssn(%rip),eax; jmp *g_sc(%rip)`; exports
   `Run`; AEAD blob embedded; no plaintext `NtAllocateVirtualMemory`,

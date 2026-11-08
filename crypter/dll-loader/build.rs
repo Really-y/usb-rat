@@ -24,4 +24,17 @@ fn main() {
     }
     println!("cargo:rerun-if-changed={}", gen.display());
     println!("cargo:rerun-if-changed={}", blob.display());
+
+    // Optional proxy export list: when `proxy.def` exists, link it so the DLL
+    // can forward the signed host's imports to the real vendor DLL.
+    let def = manifest.join("proxy.def");
+    if def.exists() {
+        println!("cargo:rerun-if-changed={}", def.display());
+        let env = std::env::var("CARGO_CFG_TARGET_ENV").unwrap_or_default();
+        if env == "msvc" {
+            println!("cargo:rustc-link-arg=/DEF:{}", def.display());
+        } else {
+            println!("cargo:rustc-link-arg={}", def.display());
+        }
+    }
 }
